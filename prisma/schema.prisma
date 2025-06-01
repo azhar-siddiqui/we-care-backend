@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  EXPIRED
+  CANCELED
+}
+
+model Admin {
+  id               String        @id @default(uuid())
+  labName          String        @db.VarChar(191)
+  ownerName        String        @db.VarChar(191)
+  email            String        @unique @db.VarChar(191)
+  password         String
+  contactNumber    String        @db.VarChar(191)
+  previousSoftware String?       @db.VarChar(191)
+  role             Role          @default(ADMIN)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  users            User[]
+  subscription     Subscription?
+  trialStartDate   DateTime?
+  trialEndDate     DateTime?
+  isTrialUsed      Boolean       @default(false)
+  lastLogin        DateTime?
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  adminId   String
+}
+
+model Subscription {
+  id             String             @id @default(uuid())
+  admin          Admin              @relation(fields: [adminId], references: [id])
+  adminId        String             @unique
+  planId         String
+  planName       String
+  status         SubscriptionStatus @default(TRIAL)
+  startDate      DateTime
+  endDate        DateTime
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  paymentDetails PaymentDetail[]
+}
+
+model PaymentDetail {
+  id             String       @id @default(uuid())
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String
+  amount         Float
+  paymentDate    DateTime
+  transactionId  String
+  paymentMethod  String
+  createdAt      DateTime     @default(now())
+}
