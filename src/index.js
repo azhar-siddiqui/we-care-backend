@@ -56,10 +56,10 @@ app.get("/", (req, resp) => {
 app.use(errorMiddleware);
 
 // const server = app.listen(PORT, () =>
-app.listen(PORT, () =>
+const server = app.listen(PORT, () =>
   console.log(`Server is running on http://localhost:${PORT}/api`)
 );
 
-// server.on("error", (err) => {
-//   console.log(`Server Error: ${err}`);
-// });
+server.on("error", (err) => {
+  console.log(`Server Error: ${err}`);
+});

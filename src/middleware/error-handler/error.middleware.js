@@ -1,6 +1,6 @@
 import { AppError } from "./index.js";
 
-export const errorMiddleware = (error, req, resp) => {
+export const errorMiddleware = (error, req, resp, next) => {
   if (error instanceof AppError) {
     console.log(`Error ${req.method} ${req.url} - ${error.message}`);
     return resp.status(error.statusCode).json({
