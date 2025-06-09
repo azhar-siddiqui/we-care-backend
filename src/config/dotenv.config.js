@@ -27,3 +27,4 @@ export const SMTP_PASSWORD = getEnvVar("SMTP_PASSWORD");
 
 export const FORM_EMAIL = getEnvVar("FORM_EMAIL");
 export const BASE_URL = getEnvVar("BASE_URL");
+export const BASE_URL_PROD = getEnvVar("BASE_URL_PROD");

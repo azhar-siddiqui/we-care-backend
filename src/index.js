@@ -7,6 +7,9 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { errorMiddleware } from "./middleware/error-handler/error.middleware.js";
 import routes from "./routes/index.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerDefinition from "./swagger.js";
 
 const app = express();
 
@@ -44,6 +47,13 @@ const limiter = rateLimit({
 
 // Apply the rate limiter to all requests
 app.use(limiter);
+
+// Swagger setup
+const swaggerSpec = swaggerJSDoc({
+  definition: swaggerDefinition,
+  apis: ["./src/controllers/*.js"],
+});
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(routes);
 

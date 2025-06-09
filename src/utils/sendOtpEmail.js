@@ -26,9 +26,7 @@ export const transporter = nodemailer.createTransport({
 export const sendOtpEmail = async (email, otp, ownerName = "User") => {
   try {
     const templatePath = path.join(__dirname, "../email/otp-email.ejs");
-    // Construct the header image URL using BASE_URL
 
-    // Render EJS template with dynamic data
     const html = await ejs.renderFile(templatePath, {
       otp,
       ownerName,

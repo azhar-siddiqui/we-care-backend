@@ -10,10 +10,7 @@ import {
 
 import prisma from "../config/db.js";
 import { asyncHandler } from "../helper/async.handler.js";
-import {
-  sendErrorResponse,
-  sendSuccessResponse,
-} from "../utils/responseUtils.js";
+import { sendSuccessResponse } from "../utils/responseUtils.js";
 
 import { generateOtp } from "../helper/generateOtp.js";
 import { redis } from "../utils/redis.connection.js";
@@ -27,7 +24,38 @@ import {
   AuthenticationError,
   ValidationError,
 } from "../middleware/error-handler/index.js";
+import { HttpStatusCode } from "../utils/http.statuscodes.js";
 
+/**
+ * @swagger
+ * /api/v1/auth/admin:
+ *   post:
+ *     summary: Register a new admin
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterAdminRequest'
+ *     responses:
+ *       200:
+ *         description: OTP sent to email for verification
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string, example: "OTP sent to email. Please verify to complete registration." }
+ *                 data: { type: object, properties: { email: { type: string, format: email } } }
+ *       400:
+ *         description: Validation error or email already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export const registerAdmin = asyncHandler(async (req, resp) => {
   const validationResult = registerAdminSchema.safeParse(req.body);
 
@@ -35,7 +63,7 @@ export const registerAdmin = asyncHandler(async (req, resp) => {
     const errors = validationResult.error.issues
       .map((issue) => issue.message)
       .join(", ");
-    return sendErrorResponse(resp, 400, `Validation failed: ${errors}`);
+    throw new ValidationError(`Validation failed: ${errors}`);
   }
 
   const {
@@ -48,9 +76,7 @@ export const registerAdmin = asyncHandler(async (req, resp) => {
   } = validationResult.data;
 
   if (!labName || !ownerName || !email || !password || !contactNumber) {
-    return sendErrorResponse(
-      resp,
-      400,
+    throw new ValidationError(
       "All fields are required. Please provide  labName, ownerName, email, password, contactNumber and password"
     );
   }
@@ -62,9 +88,7 @@ export const registerAdmin = asyncHandler(async (req, resp) => {
   });
 
   if (isEmailExisted) {
-    return sendErrorResponse(
-      resp,
-      400,
+    throw new ValidationError(
       "Email already exists. Please use a different email."
     );
   }
@@ -96,12 +120,42 @@ export const registerAdmin = asyncHandler(async (req, resp) => {
   // Return success response
   return sendSuccessResponse(
     resp,
-    200,
+    HttpStatusCode.OK,
     "OTP sent to email. Please verify to complete registration.",
     { email }
   );
 });
 
+/**
+ * @swagger
+ * /api/v1/auth/admin/verify-otp:
+ *   post:
+ *     summary: Verify OTP for admin registration
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyOtpRequest'
+ *     responses:
+ *       201:
+ *         description: Admin created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string, example: "Admin created successfully" }
+ *                 data: { $ref: '#/components/schemas/AdminResponse' }
+ *       400:
+ *         description: Invalid OTP or email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export const verifyAdminOtp = asyncHandler(async (req, resp) => {
   const validationResult = verifyOtpSchema.safeParse(req.body);
 
@@ -109,15 +163,19 @@ export const verifyAdminOtp = asyncHandler(async (req, resp) => {
     const errors = validationResult.error.issues
       .map((issue) => issue.message)
       .join(", ");
-    return sendErrorResponse(resp, 400, `Validation failed: ${errors}`);
+    throw new ValidationError(`Validation failed: ${errors}`);
   }
 
   const { email, otp } = validationResult.data;
 
   // Retrieve admin data from Redis
-  const adminData = await redis.get(`admin:pending:${email}`);
-  if (!adminData) {
-    return sendErrorResponse(resp, 400, "OTP expired or invalid email");
+  let adminData;
+  try {
+    const data = await redis.get(`admin:pending:${email}`);
+    if (!data) throw new ValidationError("OTP expired or invalid email");
+    adminData = JSON.parse(data);
+  } catch (error) {
+    throw new ValidationError(`Invalid data in Redis: ${error}`);
   }
 
   // Validate adminData structure
@@ -127,16 +185,12 @@ export const verifyAdminOtp = asyncHandler(async (req, resp) => {
     !adminData.email ||
     !adminData.otp
   ) {
-    return sendErrorResponse(
-      resp,
-      500,
-      "Internal server error: Invalid data format"
-    );
+    throw new DatabaseError("Internal server error: Invalid data format");
   }
 
   // Verify OTP
   if (adminData.otp !== otp) {
-    return sendErrorResponse(resp, 400, "Invalid OTP");
+    throw new ValidationError("Invalid OTP");
   }
 
   // Check email uniqueness again
@@ -146,9 +200,7 @@ export const verifyAdminOtp = asyncHandler(async (req, resp) => {
 
   if (isEmailExisted) {
     await redis.del(`admin:pending:${email}`);
-    return sendErrorResponse(
-      resp,
-      400,
+    throw new ValidationError(
       "Email already exists. Please use a different email."
     );
   }
@@ -180,6 +232,37 @@ export const verifyAdminOtp = asyncHandler(async (req, resp) => {
   return sendSuccessResponse(resp, 201, "Admin created successfully", newAdmin);
 });
 
+/**
+ * @swagger
+ * /api/v1/auth/admin/login:
+ *   post:
+ *     summary: Log in an admin
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Admin logged in successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refreshToken=abc123; HttpOnly; Secure; SameSite=Strict; Max-Age=604800000
+ *       401:
+ *         description: Invalid email or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export const loginAdmin = asyncHandler(async (req, resp) => {
   // Validate the request body
   const validationResult = loginSchema.safeParse(req.body);
@@ -203,6 +286,7 @@ export const loginAdmin = asyncHandler(async (req, resp) => {
       email: true,
       password: true,
       contactNumber: true,
+      role: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -252,13 +336,41 @@ export const loginAdmin = asyncHandler(async (req, resp) => {
   const { password: _, ...adminWithoutPassword } = admin;
 
   // Return success response
-  return resp.status(200).json({
-    success: true,
-    message: "Admin logged in successfully",
-    data: { admin: adminWithoutPassword, accessToken },
-  });
+  return sendSuccessResponse(
+    resp,
+    HttpStatusCode.OK,
+    "Admin logged in successfully",
+    { admin: adminWithoutPassword, accessToken }
+  );
 });
 
+/**
+ * @swagger
+ * /api/v1/auth/admin/login/refresh-token:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Admin]
+ *     security:
+ *       - CookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RefreshTokenResponse'
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refreshToken=abc123; HttpOnly; Secure; SameSite=Strict; Max-Age=604800000
+ *       401:
+ *         description: Invalid or expired refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export const refreshAccessToken = asyncHandler(async (req, resp) => {
   const refreshToken = req.cookies?.refreshToken;
 
@@ -308,13 +420,42 @@ export const refreshAccessToken = asyncHandler(async (req, resp) => {
     path: "/",
   });
 
-  return resp.status(200).json({
-    success: true,
-    message: "Token refreshed successfully",
-    data: { accessToken: newAccessToken },
-  });
+  return sendSuccessResponse(
+    resp,
+    HttpStatusCode.OK,
+    "Token refreshed successfully",
+    { accessToken: newAccessToken }
+  );
 });
 
+/**
+ * @swagger
+ * /api/v1/auth/admin/logout:
+ *   get:
+ *     summary: Log out an admin
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *       - CookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LogoutResponse'
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: refreshToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0
+ *       401:
+ *         description: Invalid or expired access token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export const logoutAdmin = asyncHandler(async (req, resp) => {
   const refreshToken = req.cookies?.refreshToken;
 
@@ -331,9 +472,8 @@ export const logoutAdmin = asyncHandler(async (req, resp) => {
     path: "/",
   });
 
-  return resp.status(200).json({
+  return resp.status(HttpStatusCode.OK).json({
     success: true,
     message: "Logged out successfully",
-    data: null,
   });
 });

@@ -3,6 +3,6 @@ import AdminRoutes from "./admin.routes.js";
 
 const routes = Router();
 
-routes.use("/api/auth", AdminRoutes);
+routes.use("/api/v1/auth", AdminRoutes);
 
 export default routes;

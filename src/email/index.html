@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verification</title>
+    <style>
+      /* Reset styles for email clients */
+      body {
+        font-family: "Poppins", "Helvetica", "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #ffffff;
+        line-height: 1.5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+      /* Container */
+      .container {
+        width: 100%;
+        max-width: 768px;
+        margin: 0 auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      /* Header Image */
+      .header-image {
+        width: 100%;
+        object-fit: cover;
+      }
+      /* Typography */
+      .user-greeting {
+        color: #333333;
+        font-weight: 600;
+        font-size: 22px;
+        margin: 20px 0 10px;
+        text-align: center;
+      }
+      .user-greeting-msg {
+        color: #666666;
+        font-weight: 300;
+        font-size: 14px;
+        margin: 10px 0;
+        text-align: center;
+      }
+      /* OTP Section */
+      .verification-code-container {
+        text-align: center;
+        margin: 20px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .user-otp {
+        color: #333333;
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 10px;
+      }
+      .otp {
+        display: inline-flex;
+        gap: 10px;
+        justify-content: center;
+        margin: 10px 0;
+      }
+      .otp-code {
+        background-color: #f4f4f4;
+        color: #8e51ff;
+        font-weight: 700;
+        font-size: 24px;
+        padding: 6px 18px;
+        border-radius: 6px;
+        min-width: 40px;
+        text-align: center;
+      }
+      .otp-expiary {
+        color: #ff9999;
+        font-weight: 400;
+        font-size: 14px;
+        margin: 10px 0;
+      }
+      /* Company Details */
+      .company-details {
+        color: #8e51ff;
+        font-weight: 500;
+      }
+      .company-solutions {
+        color: #666666;
+        font-weight: 400;
+        font-size: 12px;
+        text-align: center;
+        margin: 20px 0;
+      }
+      /* Footer */
+      .footer {
+        text-align: center;
+      }
+      /* Responsive Design */
+      @media screen and (max-width: 600px) {
+        .container {
+          padding: 10px;
+        }
+        .user-greeting {
+          font-size: 18px;
+        }
+        .user-greeting-msg {
+          font-size: 13px;
+        }
+        .otp-code {
+          font-size: 20px;
+          padding: 6px 12px;
+          min-width: 35px;
+        }
+        .header-image {
+          max-height: 150px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <img
+          class="header-image"
+          src="../assets/svg/we-care-email-header.svg"
+          alt="header-template"
+        />
+      </header>
+      <main>
+        <section>
+          <h2 class="user-greeting">Hello, Azhar Siddiqui</h2>
+          <p class="user-greeting-msg">
+            Greetings & thank you for choosing our services.<br />
+            To complete your email verification, please use the One-Time
+            Password (OTP) below:
+          </p>
+        </section>
+        <section class="verification-code-container">
+          <p class="user-otp">Your OTP</p>
+          <div class="otp">
+            <span class="otp-code">2</span>
+            <span class="otp-code">8</span>
+            <span class="otp-code">4</span>
+            <span class="otp-code">5</span>
+            <span class="otp-code">6</span>
+          </div>
+          <p class="otp-expiary">This code is valid for the next 10 minutes.</p>
+        </section>
+        <section>
+          <p class="user-greeting-msg">
+            We appreciate your trust in us and are committed to ensuring a
+            secure and seamless experience. If you did not initiate this
+            request, please ignore this email or contact our
+            <b style="text-decoration: underline">support team</b> immediately.
+          </p>
+          <p class="user-greeting-msg">
+            Need assistance? Reach out at <br />
+            <a
+              href="mailto:support@wecaresolutions.in"
+              style="color: #8e51ff; text-decoration: none"
+              >support@wecaresolutions.in</a
+            >.
+          </p>
+          <p class="user-greeting-msg">
+            Warm regards,<br />
+            <span class="company-details">WeCare Solutions Pvt. Ltd.</span>
+          </p>
+        </section>
+      </main>
+      <footer class="footer">
+        <p class="company-solutions">
+          © 2025 WeCare Solutions Pvt. Ltd.<br />
+          All Rights Reserved.
+        </p>
+        <p
+          class="user-greeting-msg"
+          style="font-size: 12px; text-align: center"
+        >
+          This email and any files transmitted with it are confidential and
+          intended solely for the use of the individual or entity to whom they
+          are addressed. If you have received this email in error, please notify
+          the sender and delete this email from your system. Unauthorized
+          disclosure, copying, or distribution of the contents is strictly
+          prohibited.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
