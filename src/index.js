@@ -8,10 +8,17 @@ import helmet from "helmet";
 import { errorMiddleware } from "./middleware/error-handler/error.middleware.js";
 import routes from "./routes/index.js";
 import swaggerUi from "swagger-ui-express";
-import swaggerJSDoc from "swagger-jsdoc";
-import swaggerDefinition from "./swagger.js";
+import YAML from "yamljs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// Load Swagger YAML
+const swaggerDocument = YAML.load(path.join(__dirname, "./docs/swagger.yaml"));
 
 // CORS configuration
 app.use(
@@ -48,12 +55,8 @@ const limiter = rateLimit({
 // Apply the rate limiter to all requests
 app.use(limiter);
 
-// Swagger setup
-const swaggerSpec = swaggerJSDoc({
-  definition: swaggerDefinition,
-  apis: ["./src/controllers/*.js"],
-});
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Serve Swagger UI at /api-docs
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(routes);
 
@@ -67,7 +70,7 @@ app.use(errorMiddleware);
 
 // const server = app.listen(PORT, () =>
 const server = app.listen(PORT, () =>
-  console.log(`Server is running on http://localhost:${PORT}/api`)
+  console.log(`Server is running on http://localhost:${PORT}`)
 );
 
 server.on("error", (err) => {
