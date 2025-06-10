@@ -1,5 +1,4 @@
 import express from "express";
-import { PORT } from "./config/dotenv.config.js";
 import { HttpStatusCode } from "./utils/http.statuscodes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -11,6 +10,7 @@ import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { BASE_URL, NODE_ENV, PORT } from "./config/dotenv.config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -97,9 +97,13 @@ app.get("/", (req, resp) => {
 app.use(errorMiddleware);
 
 // const server = app.listen(PORT, () =>
-const server = app.listen(PORT, () =>
-  console.log(`Server is running on http://localhost:${PORT}`)
-);
+const server = app.listen(PORT, () => {
+  if (NODE_ENV == "development") {
+    console.log(`Server is running on ${BASE_URL}:${PORT}`);
+  } else {
+    console.log(`Server is running on ${BASE_URL}`);
+  }
+});
 
 server.on("error", (err) => {
   console.log(`Server Error: ${err}`);

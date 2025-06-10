@@ -29,6 +29,7 @@
     "zod": "^3.25.42"
   },
   "devDependencies": {
+    "@types/yamljs": "^0.2.34",
     "prisma": "^6.8.2"
   }
 }
