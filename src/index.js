@@ -23,8 +23,12 @@ const swaggerDocument = YAML.load(path.join(__dirname, "./docs/swagger.yaml"));
 // CORS configuration
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-    allowedHeaders: ["Authrization", "Content-Type"],
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://we-care-backend-tiyp.onrender.com",
+    ],
+    allowedHeaders: ["Authorization", "Content-Type"],
     credentials: true,
   })
 );
@@ -37,7 +41,31 @@ app.use(cookieParser());
 // Trust proxy for rate limiting
 app.set("trust proxy", 1);
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'", // Required for Swagger UI scripts
+          "https://we-care-backend-tiyp.onrender.com", // Allow scripts from your backend
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'", // Required for Swagger UI styles
+        ],
+        connectSrc: [
+          "'self'",
+          "https://we-care-backend-tiyp.onrender.com", // Allow API calls to your backend
+        ],
+        imgSrc: ["'self'", "data:"], // Allow images (Swagger UI may use data URLs)
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [], // Ensure HTTPS is enforced
+      },
+    },
+  })
+);
 
 // API Rate limiting
 const limiter = rateLimit({
