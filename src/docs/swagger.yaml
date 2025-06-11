@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Admin Authentication API
-  description: API for admin registration, authentication, and session management
+  description: API for admin registration, authentication, session management, and user association
   version: 1.0.0
 servers:
   - url: https://we-care-backend-tiyp.onrender.com/api/v1/auth
@@ -178,7 +178,7 @@ paths:
   /admin/login/refresh-token:
     post:
       summary: Refresh access token
-      description: Generates a new access token using a valid refresh token.
+      description: Generates a new access token using a valid refresh token stored in a cookie.
       tags:
         - Admin Authentication
       requestBody:
@@ -217,7 +217,7 @@ paths:
   /admin/logout:
     get:
       summary: Admin logout
-      description: Logs out the admin by clearing the refresh token.
+      description: Logs out the admin by clearing the refresh token from Redis and the cookie.
       tags:
         - Admin Authentication
       security:
@@ -265,7 +265,30 @@ components:
           example: "+1234567890"
         role:
           type: string
-          example: "admin"
+          enum: ["ADMIN", "USER"]
+          example: "ADMIN"
+        previousSoftware:
+          type: string
+          nullable: true
+          example: "LabSoftwareX"
+        trialStartDate:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-06-09T12:00:00Z"
+        trialEndDate:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-06-16T12:00:00Z"
+        isTrialUsed:
+          type: boolean
+          example: false
+        lastLogin:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-06-09T12:00:00Z"
         createdAt:
           type: string
           format: date-time
@@ -274,6 +297,38 @@ components:
           type: string
           format: date-time
           example: "2025-06-09T12:00:00Z"
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "456e7890-e12b-34d5-a678-426614174001"
+        name:
+          type: string
+          example: "Jane Smith"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        role:
+          type: string
+          enum: ["ADMIN", "USER"]
+          example: "USER"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-06-09T12:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-06-09T12:00:00Z"
+        adminId:
+          type: string
+          example: "123e4567-e89b-12d3-a456-426614174000"
     Error:
       type: object
       properties:

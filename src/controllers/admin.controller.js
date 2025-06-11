@@ -112,7 +112,6 @@ export const verifyAdminOtp = asyncHandler(async (req, resp) => {
   let adminData;
   try {
     const data = await redis.get(`admin:pending:${email}`);
-
     if (!data) throw new ValidationError("OTP expired or invalid email");
 
     // Conditionally parse data
@@ -129,6 +128,9 @@ export const verifyAdminOtp = asyncHandler(async (req, resp) => {
     } else {
       throw new ValidationError("Invalid data format in Redis");
     }
+
+    // adminData = data;
+    // adminData = JSON.parse(data);
   } catch (error) {
     throw new ValidationError(
       `Error retrieving data from Redis: ${error.message}`
