@@ -12,7 +12,10 @@ function getEnvVar(name, required = true) {
 
 export const PORT = parseInt(getEnvVar("PORT"));
 export const NODE_ENV = getEnvVar("NODE_ENV");
+export const BASE_URL = getEnvVar("BASE_URL");
+
 export const DATABASE_URL = getEnvVar("DATABASE_URL");
+
 export const JWT_SECRET = getEnvVar("JWT_SECRET");
 export const ACCESS_TOKEN_SECRET = getEnvVar("ACCESS_TOKEN_SECRET");
 export const REFRESH_TOKEN_SECRET = getEnvVar("REFRESH_TOKEN_SECRET");
@@ -26,4 +29,3 @@ export const SMTP_USER_LOGIN = getEnvVar("SMTP_USER_LOGIN");
 export const SMTP_PASSWORD = getEnvVar("SMTP_PASSWORD");
 
 export const FORM_EMAIL = getEnvVar("FORM_EMAIL");
-export const BASE_URL = getEnvVar("BASE_URL");
