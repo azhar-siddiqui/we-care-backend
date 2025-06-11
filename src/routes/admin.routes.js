@@ -5,7 +5,7 @@ import {
   refreshAccessToken,
   registerAdmin,
   verifyAdminOtp,
-} from "../controllers/admin.controller.js";
+} from "../controllers/admin/admin.controller.js";
 import { authenticateAdmin } from "../middleware/admin-middleware/admin.middleware.js";
 
 const AdminRoutes = Router();

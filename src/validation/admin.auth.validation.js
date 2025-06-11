@@ -50,6 +50,25 @@ export const registerAdminSchema = z.object({
     .optional(),
 });
 
+// Zod schema for OTP verification
+export const verifyOtpSchema = z.object({
+  email: z
+    .string()
+    .email("Invalid email format")
+    .refine(
+      (email) => {
+        const domain = email.split("@")[1]?.toLowerCase();
+        return domain && ALLOWED_EMAIL_DOMAINS.includes(domain);
+      },
+      {
+        message: `Email domain must be one of: ${ALLOWED_EMAIL_DOMAINS.join(
+          ", "
+        )}`,
+      }
+    ),
+  otp: z.string().regex(/^\d{5}$/, "OTP must be a 5-digit number"),
+});
+
 export const loginSchema = z.object({
   email: z
     .string()
@@ -70,23 +89,4 @@ export const loginSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(255, "Password must not exceed 255 characters"),
-});
-
-// Zod schema for OTP verification
-export const verifyOtpSchema = z.object({
-  email: z
-    .string()
-    .email("Invalid email format")
-    .refine(
-      (email) => {
-        const domain = email.split("@")[1]?.toLowerCase();
-        return domain && ALLOWED_EMAIL_DOMAINS.includes(domain);
-      },
-      {
-        message: `Email domain must be one of: ${ALLOWED_EMAIL_DOMAINS.join(
-          ", "
-        )}`,
-      }
-    ),
-  otp: z.string().regex(/^\d{5}$/, "OTP must be a 5-digit number"),
 });

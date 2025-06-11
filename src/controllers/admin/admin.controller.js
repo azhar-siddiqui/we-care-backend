@@ -6,25 +6,25 @@ import {
   loginSchema,
   registerAdminSchema,
   verifyOtpSchema,
-} from "../validation/admin.auth.validation.js";
+} from "../../validation/admin.auth.validation.js";
 
-import prisma from "../config/db.js";
-import { asyncHandler } from "../helper/async.handler.js";
-import { sendSuccessResponse } from "../utils/responseUtils.js";
+import prisma from "../../config/db.js";
+import { asyncHandler } from "../../helper/async.handler.js";
+import { sendSuccessResponse } from "../../utils/responseUtils.js";
 
-import { generateOtp } from "../helper/generateOtp.js";
-import { redis } from "../utils/redis.connection.js";
-import { sendOtpEmail } from "../utils/sendOtpEmail.js";
+import { generateOtp } from "../../helper/generateOtp.js";
+import { redis } from "../../utils/redis.connection.js";
+import { sendOtpEmail } from "../../utils/sendOtpEmail.js";
 import {
   ACCESS_TOKEN_SECRET,
   NODE_ENV,
   REFRESH_TOKEN_SECRET,
-} from "../config/dotenv.config.js";
+} from "../../config/dotenv.config.js";
 import {
   AuthenticationError,
   ValidationError,
-} from "../middleware/error-handler/index.js";
-import { HttpStatusCode } from "../utils/http.statuscodes.js";
+} from "../../middleware/error-handler/index.js";
+import { HttpStatusCode } from "../../utils/http.statuscodes.js";
 
 export const registerAdmin = asyncHandler(async (req, resp) => {
   const validationResult = registerAdminSchema.safeParse(req.body);
